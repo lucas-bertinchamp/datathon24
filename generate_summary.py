@@ -27,22 +27,22 @@ def call_model(prompt, client, model_id):
 
     except (ClientError, Exception) as e:
         print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
-        exit(1)
+        return "Error in generating summary"
     
     return response_text
 
-def generate_summary_from_sources(clients, company_name, model_id, pdfs = [], verbose=False):
+def generate_summary_from_sources(clients, company_name, company_code, model_id, pdfs = [], verbose=False):
 
     print(f"Company code: {company_code}") if verbose else None
     
     print("Reddit Analysis ...") if verbose else None
     subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence']
     all_reddit_posts = reddit_analysis_pipeline(clients["reddit"], subreddits, company_name, clients["boto"], n_post = 10, verbose=verbose)
-    print("No reddit posts found") if len(all_reddit_posts) == 0 else None
+    print("No reddit posts found") if len(all_reddit_posts) == 0 and verbose == True else None
     
     print("Alpha Analysis ...") if verbose else None
     all_alpha_sentiments = get_alpha_news_sentiment(clients["alpha"], company_code)
-    print("No alpha news found") if len(all_alpha_sentiments) == 0 else None
+    print("No alpha news found") if len(all_alpha_sentiments) == 0 and verbose == True else None
     
     print("Summarization ...") if verbose else None
     all_summaries = []
@@ -112,8 +112,10 @@ if __name__ == "__main__":
     pdfs = []
     
     model_id = "meta.llama3-1-405b-instruct-v1:0"
-    
-    summary = generate_summary_from_sources(clients, company_name, model_id, pdfs=pdfs, verbose=True)
+    try:
+        summary = generate_summary_from_sources(clients, company_name, company_code, model_id, pdfs=pdfs, verbose=True)
+    except Exception as e:
+        summary = f"Error in generating summary"
     
     with open(f"final_summary/{company_name}_summary.txt", "w") as f:
         f.write(summary)

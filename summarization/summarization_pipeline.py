@@ -24,9 +24,18 @@ def summarization_pdf(pdf_path, verbose=False):
         print(f"Summarizing text from {pdf_name} ...") if verbose else None
         with open(f"pdf/processed/processed_{pdf_name_without_ext}.txt", "r") as f:
             pdf_processed = f.read()
-        summarized_text = summarize_text(pdf_processed)
-        process_summary = process_text(summarized_text)
-        pathlib.Path(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt").write_bytes(process_summary.encode())
+        try:
+            summarized_text = summarize_text(pdf_processed)
+            process_summary = process_text(summarized_text)
+            pathlib.Path(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt").write_bytes(process_summary.encode())
+        except Exception as e:
+            print(f"Error in summarizing text") if verbose else None
+            return ""
+        
+    with open(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt", "r") as f:
+        process_summary = f.read()
+        
+    return process_summary
         
 if __name__ == "__main__":
     pdf_path = "pdf/reports/Consommation de Base/Métro/Rapport-annuel-2019-francais.pdf"

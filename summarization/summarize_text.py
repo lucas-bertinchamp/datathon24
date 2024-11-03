@@ -46,7 +46,7 @@ def summarize_text(text):
         
         client = boto3.client("bedrock-runtime", region_name="us-west-2")
         
-        model_id = "meta.llama3-1-405b-instruct-v1:0"
+        model_id = "meta.llama3-1-70b-instruct-v1:0"
         
         response_text = call_model(user_message, client, model_id)
         
