@@ -1,33 +1,26 @@
 import boto3
 from botocore.exceptions import ClientError
-from pdf_extract import *
+from .pdf_extract import *
 import json
 
 def create_prompt(text):
     prompt = f"Summarize all useful information for a financial analyst. Be exhaustive and concise by avoiding unnecessary words. NO SENTENCES. Do not introduce your answer" + "\n\n" + text
     return prompt
 
-def summarize_text(text):
-    user_message = create_prompt(text)
-    
-    client = boto3.client("bedrock-runtime", region_name="us-west-2")
-    
-    model_id = "anthropic.claude-3-opus-20240229-v1:0"
-    
+def call_model(prompt, client, model_id):
     conversation = [
         {
             "role": "user",
-            "content": [{"text": user_message}],
+            "content": [{"text": prompt}],
         }
     ]
     
     try:
         # Send the message to the model, using a basic inference configuration.
         response = client.converse(
-            modelId="anthropic.claude-3-opus-20240229-v1:0",
+            modelId=model_id,
             messages=conversation,
-            inferenceConfig={"maxTokens":4096,"temperature":0},
-            additionalModelRequestFields={"top_k":250}
+            inferenceConfig={"maxTokens":1024,"temperature":0},
         )
 
         # Extract and print the response text.
@@ -38,6 +31,27 @@ def summarize_text(text):
         exit(1)
     
     return response_text
+    
+
+def summarize_text(text):
+    
+    size_paragraph = 10000
+    summary = ""
+    
+    for i in range(0, len(text), size_paragraph):
+        print(f"Processing paragraph {i//size_paragraph}")
+        paragraph = text[i:i+size_paragraph]
+        user_message = create_prompt(paragraph)
+        
+        client = boto3.client("bedrock-runtime", region_name="us-west-2")
+        
+        model_id = "meta.llama3-1-70b-instruct-v1:0"
+        
+        response_text = call_model(user_message, client, model_id)
+        
+        summary += response_text
+        
+    return summary
 
 
 if __name__ == "__main__":
@@ -48,6 +62,7 @@ if __name__ == "__main__":
     with open(pdf_processed_path, "r") as f:
         pdf_processed = f.read()
     
+    summarized_text = summarize_text(pdf_processed)
     
 
     
