@@ -63,9 +63,6 @@ def plot_selected_stock(company, data) :
         close_column = data.columns[0]
         data[close_column] = data[close_column].fillna(method='ffill').fillna(method='bfill')
         
-        # Plotting with Plotly
-        st.subheader(f"Stock Price for {company}")
-        
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
@@ -232,8 +229,6 @@ def get_financial_metrics(ticker):
     
 
 def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
-    # Display KPIs with historical data as bar plots
-    st.title(f"Financial KPI Analysis for {ticker}")
     
     # Get current year
     current_year = pd.Timestamp.now().year
