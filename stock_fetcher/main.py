@@ -1,7 +1,8 @@
 import streamlit as st
 import datetime
 import yfinance as yf
-from functions_general import fetch_tsx_tickers, get_stock_data, get_index_data, plot_selected_stock, plot_selected_index, get_financial_metrics, plot_kpi_data
+from functions_general import fetch_tsx_tickers, get_stock_data, get_index_data, plot_selected_stock, plot_selected_index
+from functions_general import get_financial_metrics, plot_kpi_data, calculate_dcf, calculate_relative_valuation, calculate_ddm_value, valuation_analysis
 
 
 
@@ -41,3 +42,29 @@ if __name__ == '__main__' :
     # Display financial metrics
     plot_kpi_data(ticker, historical_kpis, non_historical_kpis)
     
+    # # Example KPIs from non_historical_kpis
+    # dividend_yield = non_historical_kpis.get("Dividend Yield")
+    # dividend_growth_rate = non_historical_kpis.get("Dividend Growth Rate")
+    # roe = non_historical_kpis.get("ROE")
+    # fcf = historical_kpis["Free Cash Flow"][-1]  # Use the most recent TTM value
+    # #print(historical_kpis["Free Cash Flow"])
+    # pe_ratio = non_historical_kpis.get("P/E Ratio")
+    # pb_ratio = non_historical_kpis.get("P/B Ratio")
+    # ev_to_ebitda = non_historical_kpis.get("EV/EBITDA")
+    # ps_ratio = non_historical_kpis.get("P/S Ratio")
+    # roa = non_historical_kpis.get("ROA")  # Potentially used in relative valuation adjustments
+    # sentiment_score = 0.05  # Assuming a sentiment score of 5% for demonstration
+    # y2_revenues = historical_kpis["Revenue Growth Rate"][-2:]
+
+    # # Calculate each valuation
+    # ddm_value = calculate_ddm_value(dividend_yield, dividend_growth_rate, roe, fcf)
+    # dcf_value = calculate_dcf_value(fcf, y2_revenues, non_historical_kpis.get("Operating Margin"), capex=historical_kpis["CapEx"][-1])
+    # relative_value = calculate_relative_valuation(pe_ratio, pb_ratio, ev_to_ebitda, ps_ratio, sentiment_score=sentiment_score)
+
+    # # # Display the results
+    # # st.write(f"DDM Value: {ddm_value}")
+    # # st.write(f"DCF Value: {dcf_value}")
+    # # st.write(f"Relative Value: {relative_value}")
+    
+    # # Display price analysis
+    # valuation_analysis(ticker)
