@@ -1,9 +1,12 @@
 import streamlit as st
 import datetime
 import yfinance as yf
-from functions_general import fetch_tsx_tickers, get_stock_data, get_index_data, plot_selected_stock, plot_selected_index
-from functions_general import get_financial_metrics, plot_kpi_data, calculate_dcf, calculate_relative_valuation, calculate_ddm_value, valuation_analysis
-
+from functions_general import *
+from functions_general import clients
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from generate_summary import generate_summary_from_sources
 
 
 if __name__ == '__main__' :
@@ -41,6 +44,17 @@ if __name__ == '__main__' :
     
     # Display financial metrics
     plot_kpi_data(ticker, historical_kpis, non_historical_kpis)
+    
+    model_id = "meta.llama3-1-405b-instruct-v1:0"
+    try:
+        summary = generate_summary_from_sources(clients, company, ticker, model_id, pdfs = [], verbose=True)
+    except Exception as e:
+        summary = f"Error in generating summary"
+        
+    plot_summary(summary)
+    
+    print("Done")
+    
     
     # # Example KPIs from non_historical_kpis
     # dividend_yield = non_historical_kpis.get("Dividend Yield")

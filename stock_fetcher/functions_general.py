@@ -3,6 +3,10 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import praw
+import boto3
+import importlib
+
 # import requests
 # import boto3
 # import json
@@ -20,6 +24,18 @@ import matplotlib.pyplot as plt
 #     aws_secret_access_key=aws_secret_access_key,
 #     aws_session_token=aws_session_token
 # )
+
+clients = {
+        "reddit" : praw.Reddit(
+        client_id='zzAJ_bRHjE-f9dJh5ivO1w',
+        client_secret='JXTg1re8ADZYCkCFKFw48D-j8BTUyg',
+        user_agent='script:multi_subreddit_extractor (by u/Legal-Assistance6692)',
+        username='Legal-Assistance6692',
+        password='f54Uk92Z'
+    ),
+        "boto" : boto3.client("bedrock-runtime", region_name="us-west-2"),
+        "alpha" : ["L7AML53D7MCJ02DE", "IKOXZ7F7QT7662T2"]
+    }
 
 # Function to fetch S&P/TSX Composite companies dynamically from Wikipedia
 @st.cache_data
@@ -230,6 +246,9 @@ def get_financial_metrics(ticker):
     
     return kpi_data, non_historical_kpis
     
+def plot_summary(summary):
+    st.subheader("Summary")
+    st.write(summary)
 
 def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
     # Display KPIs with historical data as bar plots
@@ -312,6 +331,11 @@ def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
         else:
             st.write(f"{kpi}: Insufficient data for all years")
 
+    # Display KPIs without historical data in a table
+    st.subheader("Current KPIs (Non-historical)")
+    kpi_table = pd.DataFrame(non_historical_kpis.items(), columns=["KPI", "Value"])
+    st.table(kpi_table)
+    
     # Define the units for each KPI
     kpi_units = {
         "Dividend Yield": "%",
