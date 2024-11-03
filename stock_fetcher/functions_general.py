@@ -402,21 +402,25 @@ def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
 #             for element in page_layout:
 #                 st.write(element)
 
-def calculate_dcf_value(fcf, operating_margin, revenue_growth_rate, capex, discount_rate=0.1, growth_rate=0.03, projection_years=5):
-    projected_fcf = fcf  # Starting FCF value
-    dcf_value = 0
-
-    # Project FCF for each year and discount it
-    for year in range(1, projection_years + 1):
-        projected_fcf *= (1 + revenue_growth_rate)  # Assume revenue growth rate applies to FCF
-        discounted_fcf = projected_fcf / ((1 + discount_rate) ** year)
-        dcf_value += discounted_fcf
-
-    # Calculate the terminal value at the end of projection period
-    terminal_value = (projected_fcf * (1 + growth_rate)) / (discount_rate - growth_rate)
-    dcf_value += terminal_value / ((1 + discount_rate) ** projection_years)
-
-    return dcf_value
+def calculate_dcf(fcf, y2_revenues, operating_margin, capex):
+    """
+    Calculates the value using the Discounted Cash Flow (DCF) Model.
+    Returns None if any required KPI is missing.
+    """
+    revenue_growth_rate = 100*(y2_revenues[-1]-y2_revenues[-2]) / y2_revenues[-2]
+    if None in (fcf, revenue_growth_rate, operating_margin, capex):
+        return None  # Missing data; return None to indicate incomplete input
+    
+    try:
+        # Simplified DCF calculation: assuming one period for demonstration
+        # DCF = FCF * (1 + growth_rate) / (discount_rate - growth_rate)
+        discount_rate = 0.1  # Placeholder discount rate, usually derived from WACC
+        growth_rate = revenue_growth_rate  # Growth in FCF
+        projected_fcf = fcf * (1 + growth_rate)
+        dcf_value = projected_fcf / (discount_rate - growth_rate)
+        return dcf_value
+    except ZeroDivisionError:
+        return None
 
 
 def calculate_ddm_value(dividend_yield, dividend_growth_rate, roe, fcf, discount_rate=None):
@@ -446,3 +450,45 @@ def calculate_relative_valuation(pe_ratio, pb_ratio, ev_to_ebitda, ps_ratio, sen
 
     return relative_valuation
 
+def valuation_analysis(ticker):
+    stock = yf.Ticker(ticker)
+    
+    # Access available analyst-related data
+    target_mean_price = stock.info.get("targetMeanPrice")
+    target_low_price = stock.info.get("targetLowPrice")
+    target_high_price = stock.info.get("targetHighPrice")
+    current_price = stock.history(period="1d")["Close"].iloc[-1]
+    forward_pe = stock.info.get("forwardPE")
+    trailing_pe = stock.info.get("trailingPE")
+    eps = stock.info.get("trailingEps")
+
+    # Display data in Streamlit
+    st.title(f"Research Analysis for {ticker}")
+
+    # Display Analyst Price Targets
+    st.subheader("Analyst Price Targets")
+    st.metric("Current Price", f"${current_price:.2f}")
+    st.metric("Average Target Price", f"${target_mean_price:.2f}" if target_mean_price else "N/A")
+    st.metric("Low Target Price", f"${target_low_price:.2f}" if target_low_price else "N/A")
+    st.metric("High Target Price", f"${target_high_price:.2f}" if target_high_price else "N/A")
+
+    # Display PE Ratios and EPS
+    st.subheader("Valuation Metrics")
+    st.metric("Trailing P/E", f"{trailing_pe:.2f}" if trailing_pe else "N/A")
+    st.metric("Forward P/E", f"{forward_pe:.2f}" if forward_pe else "N/A")
+    st.metric("EPS (Trailing)", f"${eps:.2f}" if eps else "N/A")
+    
+    # Plot price vs target range
+    fig = go.Figure()
+
+    # Add current price
+    fig.add_trace(go.Indicator(
+        mode="gauge+number+delta",
+        value=current_price,
+        title={'text': "Current Price"},
+        delta={'reference': target_mean_price},
+        gauge={'axis': {'range': [target_low_price, target_high_price]}}
+    ))
+
+    # Show in Streamlit
+    st.plotly_chart(fig)
