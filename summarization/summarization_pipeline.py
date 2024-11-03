@@ -1,5 +1,5 @@
-from .pdf_extract import *
-from .summarize_text import *
+from summarization.pdf_extract import *
+from summarization.summarize_text import *
 import os
 import pathlib
 
@@ -20,7 +20,7 @@ def summarization_pdf(pdf_path, verbose=False):
         md_text_processed = process_text(md_text)
         pathlib.Path(f"pdf/processed/processed_{pdf_name_without_ext}.txt").write_bytes(md_text_processed.encode())
         
-    if not os.path.exists(f"pdf/summarized/summarized_{pdf_name_without_ext}.txt"):
+    if not os.path.exists(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt"):
         print(f"Summarizing text from {pdf_name} ...") if verbose else None
         with open(f"pdf/processed/processed_{pdf_name_without_ext}.txt", "r") as f:
             pdf_processed = f.read()
