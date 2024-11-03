@@ -5,7 +5,7 @@ from utils import *
 
 import praw
 
-def generate_summary_from_sources(clients, company_name, verbose=False):
+def generate_summary_from_sources(clients, company_name, pdfs = [], verbose=False):
     
     company_code = get_ticker_symbol(company_name)
     print(f"Company code: {company_code}") if verbose else None
@@ -17,8 +17,16 @@ def generate_summary_from_sources(clients, company_name, verbose=False):
     print("Alpha Analysis ...") if verbose else None
     all_alpha_sentiments = get_alpha_news_sentiment(clients["alpha"], company_code)
     
+    print("Summarization ...") if verbose else None
+    all_summaries = []
+    for pdf in pdfs:
+        summary = summarization_pdf(pdf, verbose=verbose)
+        all_summaries.append(summary)
+    
     print(all_reddit_posts)
-    print(all_alpha_sentiments)
+    print(all_alpha_sentiments)  
+    print(all_summaries)
+
 
 if __name__ == "__main__":
     company_name = "Tesla"
@@ -34,4 +42,6 @@ if __name__ == "__main__":
         "alpha" : ["L7AML53D7MCJ02DE", "IKOXZ7F7QT7662T2"]
     }
     
-    generate_summary_from_sources(clients, company_name, verbose=True)
+    pdfs = ["pdf/reports/Consommation de Base/Métro/2020-annuel-10Q-FR-FINAL.pdf"]
+    
+    generate_summary_from_sources(clients, company_name, pdfs=pdfs, verbose=True)

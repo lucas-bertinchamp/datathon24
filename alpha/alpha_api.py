@@ -1,23 +1,23 @@
 import requests
 
-def get_alpha_news_sentiment(api_keys, symbol, verbose=False):
-    all_news = []
-    
-    api_index = 0
-    api_key = api_keys[api_index]
+def get_data_from_alpha_api(api_key, symbol, verbose=False):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={symbol}&apikey={api_key}'
     r = requests.get(url)
     data = r.json()
+    return data
+
+def get_alpha_news_sentiment(api_keys, symbol, verbose=False):
+    all_news = []
+    
+    api_key_index = 0
+    data = get_data_from_alpha_api(api_keys[api_key_index], symbol, verbose=verbose)
     
     while data.get("Information", "") == "Thank you for using Alpha Vantage! Our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits.":
-        print(f"API {api_key} limit reached. Switching to the next API key ...") if verbose else None
-        api_index += 1
-        if api_index >= len(api_keys):
+        print(f"API key {api_key_index} limit reached. Switching to the next API key ...") if verbose else None
+        api_key_index += 1
+        if api_key_index >= len(api_keys):
             return []
-        api_key = api_keys[api_index]
-        url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={symbol}&apikey={api_key}'
-        r = requests.get(url)
-        data = r.json()
+        data = get_data_from_alpha_api(api_keys[api_key_index], symbol, verbose=verbose)
     
     # Check if 'feed' is in the data and format each news item
     if "feed" in data:
