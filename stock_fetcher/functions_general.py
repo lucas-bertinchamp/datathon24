@@ -325,11 +325,6 @@ def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
             
         else:
             st.write(f"{kpi}: Insufficient data for all years")
-
-    # Display KPIs without historical data in a table
-    st.subheader("Current KPIs (Non-historical)")
-    kpi_table = pd.DataFrame(non_historical_kpis.items(), columns=["KPI", "Value"])
-    st.table(kpi_table)
     
     # Define the units for each KPI
     kpi_units = {

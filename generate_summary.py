@@ -36,7 +36,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
     print(f"Company code: {company_code}") if verbose else None
     
     print("Reddit Analysis ...") if verbose else None
-    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence']
+    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence','CanadianInvestor','CanadaStocks','BayStreetBets','CanadianFinance','TSX']
     all_reddit_posts = reddit_analysis_pipeline(clients["reddit"], subreddits, company_name, clients["boto"], n_post = 10, verbose=verbose)
     print("No reddit posts found") if len(all_reddit_posts) == 0 and verbose == True else None
     
