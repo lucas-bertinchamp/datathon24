@@ -19,21 +19,16 @@ if __name__ == "__main__":
     company_name = "Tesla"
     # Setup the Reddit connection
     reddit = praw.Reddit(
-        client_id='zzAJ_bRHjE-f9dJh5ivO1w',
-        client_secret='JXTg1re8ADZYCkCFKFw48D-j8BTUyg',
-        user_agent='script:multi_subreddit_extractor (by u/Legal-Assistance6692)',
-        username='Legal-Assistance6692',
-        password='f54Uk92Z'
+        client_id='-ZK0wLjgukLtWNG69bIKUg',
+        client_secret='G_oo7tapJ88FdCIMagvqZGa5CcsKNA',
+        user_agent='script:multi_subreddit_extractor (by u/InspectionFlaky5723)',
+        username='InspectionFlaky5723',
+        password='ledatathon24cdur'
     )
 
     # Define the subreddits and company name you are searching for
-    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence']
+    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence', "CanadaFinance", "CanadianInvestor", "Questrade", "PersonalFinanceCanada"]
     company_name = "Costco"  # Change this to the company you're interested in
     boto_client = boto3.client("bedrock-runtime", region_name="us-west-2")
 
-    posts = call_reddit_api(reddit, subreddits, company_name)
-    formatted_posts = [format_post(post) for post in posts]
-    for post in formatted_posts:
-        print(format_post(post))
-        print(stmt_analysis(boto_client, post, company_name))
-        print("\n\n")
+    posts = call_reddit_api(reddit, subreddits, company_name, verbose=True)

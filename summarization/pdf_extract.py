@@ -1,6 +1,9 @@
 import pymupdf4llm
 import os
+import sys
 import nltk
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import utils
 
 def extract_text_from_pdf(pdf_path):
     md_text = pymupdf4llm.to_markdown(pdf_path)
@@ -35,5 +38,4 @@ if __name__ == "__main__":
     md_text = extract_text_from_pdf(pdf_path)
     md_text_processed = process_text(md_text)
 
-    import pathlib
-    pathlib.Path(f"pdf/processed/processed_{pdf_name_without_ext}").write_bytes(md_text_processed.encode())
+    utils.save_file("pdf/processed", f"processed_{pdf_name_without_ext}.txt", md_text_processed)
