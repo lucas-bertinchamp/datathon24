@@ -89,6 +89,7 @@ if __name__ == '__main__' :
             "<li><b>Insufficient Dividend Data</b>: The required historical or current dividend information is unavailable on yfinance.</li>"
             "<li><b>Unstable Dividend Rate</b>: The company may not have a consistent, predictable dividend payout, making DDM unsuitable for valuation.</li>"
             "<li><b>Negative Dividend Growth Rate</b>: The DDM is not applicable when dividends are expected to decline, as the model assumes a steady, positive growth rate.</li>"
+            "<li><b>Issue with the Discount Rate</b>: The discount rate for the given company is smaller than the divident growth rate.</li>"
             "</ul>"
             "<p style='font-size: 16px;'>Please ensure the company has a stable dividend history and data is available for accurate DDM analysis.</p>"
             "</div>",

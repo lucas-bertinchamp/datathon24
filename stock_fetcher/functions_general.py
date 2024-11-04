@@ -214,7 +214,7 @@ def get_financial_metrics(ticker):
     # KPIs without multi-year values
     current_info = stock.info
 
-    ##MODIF
+
     forward_dividend_rate = current_info.get("dividendRate", None)
     trailing_dividend_rate = current_info.get("trailingAnnualDividendRate", None)
     if (forward_dividend_rate and trailing_dividend_rate) is not None and trailing_dividend_rate  != 0:
@@ -224,7 +224,7 @@ def get_financial_metrics(ticker):
 
     non_historical_kpis = {
         "Dividend Yield": current_info.get("dividendYield"),
-        "Dividend Growth Rate": dividend_growth_rate, #MODIF
+        "Dividend Growth Rate": dividend_growth_rate,
         "P/E Ratio": current_info.get("trailingPE"),
         "P/B Ratio": current_info.get("priceToBook"),
         "EV/EBITDA": current_info.get("enterpriseToEbitda"),
