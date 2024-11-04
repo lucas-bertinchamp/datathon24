@@ -88,6 +88,7 @@ if __name__ == '__main__' :
     
     # Button to confirm all files are uploaded
     if st.button("Confirm Upload"):
+        st.session_state.pdf = []
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 # Create a file path for each uploaded file

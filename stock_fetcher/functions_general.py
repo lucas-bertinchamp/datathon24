@@ -27,11 +27,11 @@ import importlib
 
 clients = {
         "reddit" : praw.Reddit(
-        client_id='zzAJ_bRHjE-f9dJh5ivO1w',
-        client_secret='JXTg1re8ADZYCkCFKFw48D-j8BTUyg',
-        user_agent='script:multi_subreddit_extractor (by u/Legal-Assistance6692)',
-        username='Legal-Assistance6692',
-        password='f54Uk92Z'
+        client_id='-ZK0wLjgukLtWNG69bIKUg',
+        client_secret='G_oo7tapJ88FdCIMagvqZGa5CcsKNA',
+        user_agent='script:multi_subreddit_extractor (by u/InspectionFlaky5723)',
+        username='InspectionFlaky5723',
+        password='ledatathon24cdur'
     ),
         "boto" : boto3.client("bedrock-runtime", region_name="us-west-2"),
         "alpha" : ["L7AML53D7MCJ02DE", "IKOXZ7F7QT7662T2"]

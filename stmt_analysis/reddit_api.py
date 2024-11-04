@@ -12,13 +12,15 @@ def is_within_last_three_weeks(created_utc):
     post_date = datetime.datetime.fromtimestamp(created_utc)
     return post_date >= three_weeks_ago
 
-def call_reddit_api(client_reddit, subreddits, company_name):
+def call_reddit_api(client_reddit, subreddits, company_name, verbose=False):
 
     all_posts = []
     
     try:
         # Loop through each subreddit and fetch posts
         for subreddit_name in subreddits:
+            if verbose:
+                print(f"Searching for {company_name} in r/{subreddit_name} ...")
             subreddit = client_reddit.subreddit(subreddit_name)
             
             recent_posts = subreddit.search(f"title:{company_name}", sort='new', time_filter='month', limit=50)

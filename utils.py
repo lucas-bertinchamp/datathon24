@@ -1,19 +1,12 @@
-import requests
+import os
+import sys
 
-def get_ticker_symbol(company_name, target_exchange="NASDAQ"):
-    base_url = "https://financialmodelingprep.com/api/v3/search"
-    params = {
-        "query": company_name,
-        "limit": 5,  # Request multiple results to filter locally
-        "apikey": "QblgNeICcypTRGMUb8Vas9baxUBLMmUv"  # Replace with your FMP API key
-    }
-    response = requests.get(base_url, params=params)
-    data = response.json()
+def save_file(folder, file_name, content):
     
-    # Filter results for the target exchange
-    for result in data:
-        if result.get("exchangeShortName") == target_exchange:
-            return result['symbol']
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     
-    # Return None if no match is found on the target exchange
-    return None
+    with open(os.path.join(folder, file_name), "w", encoding="utf-8") as f:
+        f.write(content)
+        
+    return os.path.join(folder, file_name)

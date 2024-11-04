@@ -21,7 +21,7 @@ def call_model(prompt, client, model_id):
         response = client.converse(
             modelId=model_id,
             messages=conversation,
-            inferenceConfig={"maxTokens":2048,"temperature":0},
+            inferenceConfig={"maxTokens":128,"temperature":0},
         )
 
         # Extract and print the response text.
@@ -34,13 +34,13 @@ def call_model(prompt, client, model_id):
     return response_text
     
 
-def summarize_text(text):
+def summarize_text(text, verbose=False):
     
-    size_paragraph = len(text)
+    size_paragraph = 4000
     summary = ""
     
     for i in range(0, len(text), size_paragraph):
-        print(f"Processing paragraph {i//size_paragraph + 1} / {len(text)//size_paragraph + 1} ...")
+        print(f"Processing paragraph {i//size_paragraph + 1} / {len(text)//size_paragraph + 1} ...") if verbose else None
         paragraph = text[i:i+size_paragraph]
         user_message = create_prompt(paragraph)
         
@@ -52,7 +52,7 @@ def summarize_text(text):
         
         summary += response_text
         
-        time.sleep(20)
+        time.sleep(1)
         
     return summary
 
