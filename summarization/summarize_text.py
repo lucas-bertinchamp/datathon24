@@ -29,7 +29,7 @@ def call_model(prompt, client, model_id):
 
     except (ClientError, Exception) as e:
         print(f"ERROR: Can't invoke '{model_id}'. Reason: {e}")
-        exit(1)
+        return ""
     
     return response_text
     

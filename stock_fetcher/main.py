@@ -83,7 +83,8 @@ if __name__ == '__main__' :
     uploaded_files = st.file_uploader("Drop your PDF files here", type="pdf", accept_multiple_files=True)
 
     # Initialize an empty list to store the paths of the uploaded files
-    pdfs = []
+    if "pdf" not in st.session_state:
+        st.session_state.pdf = []
     
     # Button to confirm all files are uploaded
     if st.button("Confirm Upload"):
@@ -97,7 +98,7 @@ if __name__ == '__main__' :
                     f.write(uploaded_file.getbuffer())
                     
                 # pdfs is appended the path of the pdfs
-                pdfs.append(file_path)
+                st.session_state.pdf.append(file_path)
 
             st.success(f"All files have been saved to {output_folder}")
         else:
@@ -108,7 +109,7 @@ if __name__ == '__main__' :
     if st.button("Generate analysis summary from AI"):
         model_id = "meta.llama3-1-405b-instruct-v1:0"
         try:
-            summary = generate_summary_from_sources(clients, company, ticker, model_id, pdfs, verbose=True)
+            summary = generate_summary_from_sources(clients, company, ticker, model_id, st.session_state.pdf, verbose=True)
         except Exception as e:
             summary = f"Error in generating summary"
             

@@ -19,7 +19,7 @@ def summarization_pdf(pdf_path, verbose=False):
         md_text = extract_text_from_pdf(pdf_path)
         md_text_processed = process_text(md_text)
         pathlib.Path(f"pdf/processed/processed_{pdf_name_without_ext}.txt").write_bytes(md_text_processed.encode())
-        
+    
     if not os.path.exists(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt"):
         print(f"Summarizing text from {pdf_name} ...") if verbose else None
         with open(f"pdf/processed/processed_{pdf_name_without_ext}.txt", "r") as f:
@@ -27,6 +27,9 @@ def summarization_pdf(pdf_path, verbose=False):
         try:
             summarized_text = summarize_text(pdf_processed)
             process_summary = process_text(summarized_text)
+            if len(process_summary) == 0:
+                print(f"Error in summarizing text. Process continues ...") if verbose else None
+                return ""
             pathlib.Path(f"pdf/summaries/summarized_{pdf_name_without_ext}.txt").write_bytes(process_summary.encode())
         except Exception as e:
             print(f"Error in summarizing text") if verbose else None
