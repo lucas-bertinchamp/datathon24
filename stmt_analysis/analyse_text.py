@@ -1,6 +1,5 @@
 import boto3
 from botocore.exceptions import ClientError
-import json
 import nltk
 
 def preprocess_text(text):
