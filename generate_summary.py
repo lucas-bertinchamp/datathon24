@@ -59,7 +59,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
     Give a fundamental analysis of the company, including its financial statements, its market position, its competitors, and its future prospects.
     Give a technical analysis of the company, including its stock price, its trading volume, and its moving averages.
     Give a sentiment analysis of the company, including the sentiment of the news and the sentiment of the social media.
-    Do not give more details than necessary, be precise in your analysis. Do not write your answer in LaTeX.
+    Do not give more details than necessary, be precise in your analysis. Do not write your answer in LaTeX use only text format.
     
     Company: {company_name}
     

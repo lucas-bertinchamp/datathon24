@@ -364,7 +364,7 @@ def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
             """, 
             unsafe_allow_html=True
         )
-
+    
     # Display KPIs in a 3-column layout, except for ROA and ROE
     for i in range(0, len(kpi_names) - 2, 3):
         display_kpi(col1, kpi_names[i], kpi_values[i], kpi_units[kpi_names[i]])

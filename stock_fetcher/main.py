@@ -30,7 +30,14 @@ if __name__ == '__main__' :
     with col2:
         end_date = st.date_input("End Date", datetime.date.today())
 
-
+    # Heading
+    title_to_use = str(company) + " - " + str(ticker)
+    # Display the title with centered alignment and all caps
+    st.markdown(
+        f"<h1 style='text-align: center; text-transform: uppercase;'>{title_to_use}</h1>",
+        unsafe_allow_html=True
+    )
+    
     # General ingformation on company :
     st.title(f"Up-to-date General information on {company}")
     # Stock price and index price
@@ -62,15 +69,51 @@ if __name__ == '__main__' :
     st.title(f"Financial KPI Analysis for {company}")
     plot_kpi_data(ticker, historical_kpis, non_historical_kpis)
     
-    model_id = "meta.llama3-1-405b-instruct-v1:0"
-    try:
-        summary = generate_summary_from_sources(clients, company, ticker, model_id, pdfs = [], verbose=True)
-    except Exception as e:
-        summary = f"Error in generating summary"
-        
-    plot_summary(summary)
+    st.title(f"Financial Analysis summary for {company}")
     
-    print("Done")
+    # Ensure the folder exists
+    output_folder = "../pdf/uploaded_history_"+str(ticker)
+    os.makedirs(output_folder, exist_ok=True)
+
+    # PDF Drop Zone
+    st.subheader("PDF Drop Zone: for enhanced AI analysis")
+    st.write(f"Drop a relevant Financial Document PDF about {company} here to improve AI generated report")
+
+    # Create a PDF drop zone with multiple file upload support
+    uploaded_files = st.file_uploader("Drop your PDF files here", type="pdf", accept_multiple_files=True)
+
+    # Initialize an empty list to store the paths of the uploaded files
+    pdfs = []
+    
+    # Button to confirm all files are uploaded
+    if st.button("Confirm Upload"):
+        if uploaded_files:
+            for uploaded_file in uploaded_files:
+                # Create a file path for each uploaded file
+                file_path = os.path.join(output_folder, uploaded_file.name)
+
+                # Save the file to the specified directory
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                    
+                # pdfs is appended the path of the pdfs
+                pdfs.append(file_path)
+
+            st.success(f"All files have been saved to {output_folder}")
+        else:
+            st.warning("No files were uploaded.")
+    
+    st.write('\n')
+    
+    if st.button("Generate analysis summary from AI"):
+        model_id = "meta.llama3-1-405b-instruct-v1:0"
+        try:
+            summary = generate_summary_from_sources(clients, company, ticker, model_id, pdfs, verbose=True)
+        except Exception as e:
+            summary = f"Error in generating summary"
+            
+        plot_summary(summary)
+        print("Done")
     
     
     # # Example KPIs from non_historical_kpis
