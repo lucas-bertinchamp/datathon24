@@ -42,7 +42,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
     
     print("Alpha Analysis ...") if verbose else None
     all_alpha_sentiments = []
-    #all_alpha_sentiments = get_alpha_news_sentiment(clients["alpha"], company_code)
+    all_alpha_sentiments = get_alpha_news_sentiment(clients["alpha"], company_code)
     print("No alpha news found") if len(all_alpha_sentiments) == 0 and verbose == True else None
     
     print("Summarization ...") if verbose else None

@@ -36,7 +36,7 @@ def call_model(prompt, client, model_id):
 
 def summarize_text(text, verbose=False):
     
-    size_paragraph = 4000
+    size_paragraph = 3000
     summary = ""
     
     for i in range(0, len(text), size_paragraph):

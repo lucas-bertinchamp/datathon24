@@ -187,22 +187,6 @@ def get_financial_metrics(ticker):
     # Cash flow statement for free cash flow, CapEx, etc. (multi-year)
     cash_flow = stock.cashflow
 
-    # # Create a dictionary to store the KPI values for each year
-    # kpi_data = {
-    #     "Revenue": [income_stmt.loc["Total Revenue"].get(year, None).values[0] if year in income_stmt.columns else None for year in years],
-    #     "Operating Margin": [(income_stmt.loc["Operating Income"].get(year, None).values[0] / income_stmt.loc["Total Revenue"].get(year, None).values[0]
-    #         if income_stmt.loc["Total Revenue"].get(year, None) is not None and income_stmt.loc["Total Revenue"].get(year, None).values[0] != 0 else None)
-    #         if year in income_stmt.columns else None for year in years],
-    #     "Free Cash Flow": [cash_flow.loc["Free Cash Flow"].get(year, None).values[0] if year in cash_flow.columns else None for year in years],
-    #     "CapEx": [cash_flow.loc["Capital Expenditure"].get(year, None).values[0] if year in cash_flow.columns else None for year in years],
-    # }
-
-    # # Add TTM values
-    # kpi_data["Revenue"].append(get_ttm_value(stock.quarterly_financials, "Total Revenue"))
-    # kpi_data["Operating Margin"].append((get_ttm_value(stock.quarterly_financials, "Operating Income") / get_ttm_value(stock.quarterly_financials, "Total Revenue")) if get_ttm_value(stock.quarterly_financials, "Total Revenue") != 0 else None)
-    # kpi_data["Free Cash Flow"].append(get_ttm_value(stock.quarterly_cashflow, "Free Cash Flow"))
-    # kpi_data["CapEx"].append(get_ttm_value(stock.quarterly_cashflow, "Capital Expenditure"))
-
     # Create a dictionary to store the KPI values for each year
     operating_income = [safe_get_value(income_stmt, "Operating Income", year) for year in years]
     total_revenue = [safe_get_value(income_stmt, "Total Revenue", year) for year in years]
@@ -227,12 +211,20 @@ def get_financial_metrics(ticker):
     kpi_data["Free Cash Flow"].append(get_ttm_value(stock.quarterly_cashflow, "Free Cash Flow"))
     kpi_data["CapEx"].append(get_ttm_value(stock.quarterly_cashflow, "Capital Expenditure"))
 
-    
     # KPIs without multi-year values
     current_info = stock.info
+
+    ##MODIF
+    forward_dividend_rate = current_info.get("dividendRate", None)
+    trailing_dividend_rate = current_info.get("trailingAnnualDividendRate", None)
+    if (forward_dividend_rate and trailing_dividend_rate) is not None and trailing_dividend_rate  != 0:
+        dividend_growth_rate = (forward_dividend_rate / trailing_dividend_rate) - 1
+    else:
+        dividend_growth_rate = None
+
     non_historical_kpis = {
         "Dividend Yield": current_info.get("dividendYield"),
-        "Dividend Growth Rate": current_info.get("dividendRate"),
+        "Dividend Growth Rate": dividend_growth_rate, #MODIF
         "P/E Ratio": current_info.get("trailingPE"),
         "P/B Ratio": current_info.get("priceToBook"),
         "EV/EBITDA": current_info.get("enterpriseToEbitda"),
@@ -240,7 +232,7 @@ def get_financial_metrics(ticker):
         "ROA": current_info.get("returnOnAssets"),
         "ROE": current_info.get("returnOnEquity"),
     }
-    
+
     return kpi_data, non_historical_kpis, current_info
     
 def plot_summary(summary):
@@ -380,129 +372,121 @@ def plot_kpi_data(ticker, kpi_data, non_historical_kpis):
 
 
 
-# # Function to retrieve financial metrics via Bedrock
-# def get_financial_metrics(company_name):
-#     # Define the prompt for Bedrock to extract financial metrics
-#     prompt = f"Please provide key financial metrics such as revenue, profit, and EPS for {company_name}."
+def plot_valuation_gauge(stock_price, ddm_value, ticker):
+    # Display title and description
+    st.title(f"DDM Valuation for {ticker}")
+    st.markdown(
+    "This analysis is based on the Dividend Discount Model (DDM) valuation method. "
+    "Growth rate is calculated as the average of the growth rates between consecutive dividends. "
+    "The DDM is reliable for stable, mature companies with consistent dividend growth. "
+    "Companies with fluctuating growth rates may yield inaccurate DDM valuations, so results should be interpreted with caution. "
+    "In general, a margin of safety of 10-30% is recommended to account for potential valuation variances."
+    )
+    # Calculate the percentage difference between stock price and DDM value
+    percentage_diff = ((stock_price - ddm_value) / ddm_value) * 100
+    premium_text = f"{abs(percentage_diff):.1f}% {'premium' if percentage_diff > 0 else 'discount'}"
 
-#     # Prepare the request payload for Bedrock
-#     request_payload = {
-#         "inputText": prompt,
-#         "textGenerationConfig": {
-#             "maxTokenCount": 512,
-#             "temperature": 0.5,
-#             "topP": 0.9
-#         }
-#     }
-
-#     # Convert the payload to JSON format
-#     request_body = json.dumps(request_payload)
-
-#     # Invoke the Bedrock model
-#     response = bedrock_client.invoke_model(
-#         modelId='amazon.titan-text-express-v1',  # Replace with the appropriate Bedrock model ID
-#         body=request_body
-#     )
-
-#     # Parse and return the response
-#     response_body = json.loads(response['body'].read())
-#     financial_metrics = response_body['results'][0]['outputText']
-
-#     return financial_metrics
-
-# def extract_data(uploaded_file):
-#     if uploaded_file is not None:
-#         for page_layout in extract_pages(uploaded_file):
-#             for element in page_layout:
-#                 st.write(element)
-
-def calculate_dcf(fcf, y2_revenues, operating_margin, capex):
-    """
-    Calculates the value using the Discounted Cash Flow (DCF) Model.
-    Returns None if any required KPI is missing.
-    """
-    revenue_growth_rate = 100*(y2_revenues[-1]-y2_revenues[-2]) / y2_revenues[-2]
-    if None in (fcf, revenue_growth_rate, operating_margin, capex):
-        return None  # Missing data; return None to indicate incomplete input
-    
-    try:
-        # Simplified DCF calculation: assuming one period for demonstration
-        # DCF = FCF * (1 + growth_rate) / (discount_rate - growth_rate)
-        discount_rate = 0.1  # Placeholder discount rate, usually derived from WACC
-        growth_rate = revenue_growth_rate  # Growth in FCF
-        projected_fcf = fcf * (1 + growth_rate)
-        dcf_value = projected_fcf / (discount_rate - growth_rate)
-        return dcf_value
-    except ZeroDivisionError:
-        return None
-
-
-def calculate_ddm_value(dividend_yield, dividend_growth_rate, roe, fcf, discount_rate=None):
-    # Assume a default discount rate if not provided (e.g., use ROE as a proxy if appropriate)
-    if discount_rate is None:
-        discount_rate = roe  # Assuming ROE can represent the required rate of return
-
-    # Convert dividend yield into an annualized dividend amount
-    dividend_per_share = fcf * dividend_yield
-
-    # Calculate DDM value using the formula
-    if discount_rate > dividend_growth_rate:
-        ddm_value = (dividend_per_share * (1 + dividend_growth_rate)) / (discount_rate - dividend_growth_rate)
+    # Determine if the stock is undervalued, fairly valued, or overvalued
+    if percentage_diff < -10:
+        valuation_status = "Undervalued"
+    elif percentage_diff > 10:
+        valuation_status = "Overvalued"
     else:
-        ddm_value = None  # Set to None if calculation conditions aren't met
+        valuation_status = "Fairly Valued"
 
-    return ddm_value
+    # Additional ratings based on zones
+    if percentage_diff < -20:
+        star_rating = "★★★★★"  # 4 stars for light blue
+    elif -20 <= percentage_diff < -10:
+        star_rating = "★★★★☆"  # 3 stars for sky blue
+    elif -10 <= percentage_diff <= 10:
+        star_rating = "★★★☆☆"  # 3 stars for light blue
+    elif 10 < percentage_diff <= 20:
+        star_rating = "★★☆☆☆"  # 2 stars for salmon
+    elif percentage_diff > 20:
+        star_rating = "★☆☆☆☆"  # 1 star for red
 
-
-def calculate_relative_valuation(pe_ratio, pb_ratio, ev_to_ebitda, ps_ratio, sentiment_score=None):
-    # Calculate an average of key valuation multiples
-    relative_valuation = (pe_ratio + pb_ratio + ev_to_ebitda + ps_ratio) / 4
-
-    # Adjust based on sentiment score (optional)
-    if sentiment_score is not None:
-        relative_valuation *= (1 + sentiment_score)
-
-    return relative_valuation
-
-def valuation_analysis(ticker):
-    stock = yf.Ticker(ticker)
-    
-    # Access available analyst-related data
-    target_mean_price = stock.info.get("targetMeanPrice")
-    target_low_price = stock.info.get("targetLowPrice")
-    target_high_price = stock.info.get("targetHighPrice")
-    current_price = stock.history(period="1d")["Close"].iloc[-1]
-    forward_pe = stock.info.get("forwardPE")
-    trailing_pe = stock.info.get("trailingPE")
-    eps = stock.info.get("trailingEps")
-
-    # Display data in Streamlit
-    st.title(f"Research Analysis for {ticker}")
-
-    # Display Analyst Price Targets
-    st.subheader("Analyst Price Targets")
-    st.metric("Current Price", f"${current_price:.2f}")
-    st.metric("Average Target Price", f"${target_mean_price:.2f}" if target_mean_price else "N/A")
-    st.metric("Low Target Price", f"${target_low_price:.2f}" if target_low_price else "N/A")
-    st.metric("High Target Price", f"${target_high_price:.2f}" if target_high_price else "N/A")
-
-    # Display PE Ratios and EPS
-    st.subheader("Valuation Metrics")
-    st.metric("Trailing P/E", f"{trailing_pe:.2f}" if trailing_pe else "N/A")
-    st.metric("Forward P/E", f"{forward_pe:.2f}" if forward_pe else "N/A")
-    st.metric("EPS (Trailing)", f"${eps:.2f}" if eps else "N/A")
-    
-    # Plot price vs target range
+    # Create Plotly figure
     fig = go.Figure()
 
-    # Add current price
+    # Add the main gauge with percentage difference as scale
+    color = '#007bff' if percentage_diff < 0 else '#FF5733'
     fig.add_trace(go.Indicator(
-        mode="gauge+number+delta",
-        value=current_price,
-        title={'text': "Current Price"},
-        delta={'reference': target_mean_price},
-        gauge={'axis': {'range': [target_low_price, target_high_price]}}
+        mode="gauge+number",
+        value=percentage_diff,
+        number={'suffix': "%", 'font': {'size': 30}, 'valueformat': ".1f"},
+        title={'text': f"<b>DDM Fair Value: <span style='color:{color};'>{premium_text}</span></b>", 'font': {'size': 28, 'color': 'black'}},
+        gauge={
+            'axis': {'range': [-50, 50], 'tickwidth': 1, 'tickcolor': "darkgray", 'tickmode': 'array', 
+                     'tickvals': [-50, -20, -10, 0, 10, 20, 50],
+                     'ticktext': ["-50%", "-20%", "-10%", "0%", "10%", "20%", "50%"]},
+            'bar': {'color': "black", 'thickness': 0.2},
+            'bgcolor': "white",
+            'steps': [
+                {'range': [-50, -20], 'color': 'skyblue'},
+                {'range': [-20, -10], 'color': 'lightblue'},
+                {'range': [-10, 10], 'color': 'white'},
+                {'range': [10, 20], 'color': 'peachpuff'},
+                {'range': [20, 50], 'color': 'salmon'}
+            ],
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': percentage_diff
+            }
+        }
     ))
 
-    # Show in Streamlit
-    st.plotly_chart(fig)
+    # Display DDM fair value, stock price, and valuation status below the gauge
+    fig.add_annotation(
+        text=f"Stock Price: ${stock_price:.2f} | Fair Value: ${ddm_value:.2f} | Status: {valuation_status} | Investment rating: {star_rating}",
+        x=0.5, y=-0.15,
+        showarrow=False,
+        font=dict(size=14, color="black"),
+        xref="paper", yref="paper",
+        align="center"
+    )
+
+    return fig
+
+def calculate_ddm_value(ticker):
+    stock = yf.Ticker(ticker)
+    beta = stock.info.get("beta", None)
+    dividend_rate = stock.info.get("dividendRate", None)
+    
+    # Modulated Parameters
+    risk_free_rate = 0.0329  # Latest 10-year Canadian government bond yield
+    market_return = 0.057  # Long-term geometric average return of S&P/TSX
+
+    if (dividend_rate or beta) is None:
+        return None  # Insufficient data for DDM calculation
+    
+    discount_rate = risk_free_rate + beta * (market_return - risk_free_rate)
+    
+    # Fetch historical dividends and calculate growth rate
+    dividend_history = stock.dividends
+    if len(dividend_history) < 2:
+        return None  # Insufficient data for calculating growth rate
+    
+    # Calculate growth rates between consecutive dividends
+    growth_rates = []
+    for i in range(1, len(dividend_history)):
+        prev_dividend = dividend_history[i - 1]
+        current_dividend = dividend_history[i]
+        growth_rate = (current_dividend / prev_dividend) - 1
+        growth_rates.append(growth_rate)
+    
+    # Calculate the arithmetic mean of the growth rates
+    if growth_rates:
+        dividend_growth_rate = sum(growth_rates) / len(growth_rates)
+    else:
+        return None  # No valid growth rate found
+    
+    # Ensure growth rate is positive and below the discount rate
+    if dividend_growth_rate >= discount_rate or dividend_growth_rate <= 0:
+        return None
+    
+    # DDM Calculation using Gordon Growth Model
+    ddm_value = dividend_rate / (discount_rate - dividend_growth_rate)
+    
+    return ddm_value
