@@ -56,7 +56,7 @@ if __name__ == '__main__' :
     st.write(company_info)
     
     # Get financial company data
-    historical_kpis, non_historical_kpis = get_financial_metrics(ticker)
+    historical_kpis, non_historical_kpis, _ = get_financial_metrics(ticker)
     
     # Display financial metrics
     st.title(f"Financial KPI Analysis for {company}")

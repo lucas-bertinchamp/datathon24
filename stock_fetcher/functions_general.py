@@ -241,7 +241,7 @@ def get_financial_metrics(ticker):
         "ROE": current_info.get("returnOnEquity"),
     }
     
-    return kpi_data, non_historical_kpis
+    return kpi_data, non_historical_kpis, current_info
     
 def plot_summary(summary):
     st.subheader("Summary")

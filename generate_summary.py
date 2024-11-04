@@ -36,7 +36,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
     print(f"Company code: {company_code}") if verbose else None
     
     print("Reddit Analysis ...") if verbose else None
-    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence','CanadianInvestor','CanadaStocks','BayStreetBets','CanadianFinance','TSX']
+    subreddits = ['wallstreetbets', 'stocks', 'investing', 'options', 'pennystocks', 'SecurityAnalysis', 'ValueInvesting', 'DividendInvesting', 'Daytrading', 'algotrading', 'FinancialIndependence','CanadianInvestor','CanadaStocks','BayStreetBets']
     all_reddit_posts = reddit_analysis_pipeline(clients["reddit"], subreddits, company_name, clients["boto"], n_post = 10, verbose=verbose)
     print("No reddit posts found") if len(all_reddit_posts) == 0 and verbose == True else None
     
@@ -51,7 +51,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
         all_summaries.append(summary)
         
     print("Financial Metrics ...") if verbose else None
-    kpi_data, non_historical_kpi = get_financial_metrics(company_code)
+    kpi_data, non_historical_kpi, current_info = get_financial_metrics(company_code)
     
     
     prompt = f"""
@@ -59,7 +59,7 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
     Give a fundamental analysis of the company, including its financial statements, its market position, its competitors, and its future prospects.
     Give a technical analysis of the company, including its stock price, its trading volume, and its moving averages.
     Give a sentiment analysis of the company, including the sentiment of the news and the sentiment of the social media.
-    Do not give more details than necessary, be precise in your analysis.
+    Do not give more details than necessary, be precise in your analysis. Do not write your answer in LaTeX.
     
     Company: {company_name}
     
@@ -87,6 +87,12 @@ def generate_summary_from_sources(clients, company_name, company_code, model_id,
         Financial Metrics (Non-Historical KPIs):
         {non_historical_kpi}
         """
+        
+    if len(current_info) > 0:
+        prompt += f"""
+        Global and financial information:
+        {current_info}
+    """
 
     print(f"Calling model to generate summary of {company_name}") if verbose else None
     summary = call_model(prompt, clients["boto"], model_id)

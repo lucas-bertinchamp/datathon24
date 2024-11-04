@@ -6,7 +6,6 @@ def reddit_analysis_pipeline(reddit_client, subreddits, company_name, boto_clien
     all_analysis = {}
     posts = call_reddit_api(reddit_client, subreddits, company_name)[:n_post]
     formatted_posts = [format_post(post) for post in posts]
-    
     print(f"Number of posts found: {len(formatted_posts)}") if verbose else None
     
     for i, post in enumerate(formatted_posts):
